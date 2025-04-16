@@ -1,8 +1,7 @@
 const db = require("../connection");
 const format = require('pg-format');
 const {convertTimestampToDate, 
-  convertArticleTitleToArticleI,
-  convertArticleTitleToArticleID} = require("./utils.js")
+  createRef} = require("./utils.js")
 
 const seed = ({ topicData, userData, articleData, commentData }) => {
   //drop databases
@@ -78,25 +77,25 @@ const seed = ({ topicData, userData, articleData, commentData }) => {
           article.article_img_url
           ]
   })
-  const insertArticlesQuery = format(`INSERT INTO articles (title, topic, author, body, created_at, votes, article_img_url) VALUES %L`, formattedArticles)
+  const insertArticlesQuery = format(`INSERT INTO articles (title, topic, author, body, created_at, votes, article_img_url) VALUES %L RETURNING *;`, formattedArticles)
   return db.query(insertArticlesQuery)
   })
-// .then(()=>{
-//   const formattedComments = commentData.map((comment)=>{
-//     const formattedArticleID = convertArticleTitleToArticleID(comment.article_title)
-//     const formattedDate = convertTimestampToDate(comment.created_at)
-//     return [
-//       formattedArticleID.article_id,
-//       comment.body,
-//       comment.votes,
-//       comment.author,
-//       formattedDate.created_at
-//     ]
-//   })
+.then((result)=>{
+  const articlesRefObject = createRef(result.rows)
+  const formattedComments = commentData.map((comment)=>{
+    const formattedDate = convertTimestampToDate(comment.created_at)
+    return [
+      articlesRefObject[comment.article_title],
+      comment.body,
+      comment.votes,
+      comment.author,
+      formattedDate.created_at
+    ]
+  })
 
-//   const insertCommentsQuery = format(`INSERT INTO comments (article_id, body, author, votes, created_at) VALUES %L`, formattedComments)
-//   return db.query(insertCommentsQuery)
-// })
+  const insertCommentsQuery = format(`INSERT INTO comments (article_id, body, votes, author, created_at) VALUES %L`, formattedComments)
+  return db.query(insertCommentsQuery)
+})
   })
   .catch((err)=> {
     console.log(err)
