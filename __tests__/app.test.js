@@ -79,6 +79,51 @@ describe("GET /api/articles/:article_id", () => {
   })
 })
 
+describe("GET /api/articles", () => {
+  test("200: Responds with an array of article objects", () => {
+      return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then(({body: { articles }}) => {
+        expect(articles).toHaveLength(13)
+        articles.forEach((article) => {
+          expect(article).toMatchObject({
+            article_id: expect.any(Number),
+            title: expect.any(String),
+            topic: expect.any(String),
+            author: expect.any(String),
+            created_at: expect.any(String),
+            votes: expect.any(Number),
+            article_img_url: expect.any(String),
+            comment_count: expect.any(Number)
+        });
+      })
+    })
+  })
+  
+  test("200: Article objects do not contain a body property", () => {
+    return request(app)
+    .get("/api/articles")
+    .expect(200)
+    .then(({body: { articles }}) => {
+      expect(articles).toHaveLength(13)
+      articles.forEach((article) => {
+        expect(article).not.toHaveProperty("body")
+      })
+    })
+  })
+
+  test("200: Response is sorted by date in descending order", () => {
+    return request(app)
+    .get("/api/articles")
+    .expect(200)
+    .then(({body : {articles }}) => {
+      expect(articles).toBeSortedBy('created_at', { descending: true })
+    })
+  })
+})
+
+
 describe("ERROR invalid endpoint", () => {
   test("404: Responds with error if user does not input api address correctly", () => {
     return request(app)
