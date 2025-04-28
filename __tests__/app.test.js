@@ -25,3 +25,26 @@ describe("GET /api", () => {
       });
   });
 });
+
+describe("GET /api/topics", () => {
+  test("200: Responds with all topics, with all topics containing correct properties", () => {
+    return request(app)
+    .get("/api/topics")
+    .expect(200)
+    .then(({body: { topics }}) => {
+      expect(topics).toHaveLength(3)
+      topics.forEach((topic) => {
+        expect(topic).toMatchObject({
+          slug: expect.any(String),
+          description: expect.any(String)
+        })
+      });
+    })
+  })
+
+  test("404: Responds with error if user does not input address correctly", () => {
+    return request(app)
+    .get("/api/topicz")
+    .expect(404)
+  })
+})
