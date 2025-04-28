@@ -66,7 +66,7 @@ const seed = ({ topicData, userData, articleData, commentData }) => {
   })
   .then(()=>{
      const formattedArticles = articleData.map((article) => {
-        const formattedDate = convertTimestampToDate(article.created_at)
+        const formattedDate = convertTimestampToDate(article)
         return [
           article.title,
           article.topic,
@@ -83,7 +83,7 @@ const seed = ({ topicData, userData, articleData, commentData }) => {
 .then((result)=>{
   const articlesRefObject = createRef(result.rows)
   const formattedComments = commentData.map((comment)=>{
-    const formattedDate = convertTimestampToDate(comment.created_at)
+    const formattedDate = convertTimestampToDate(comment)
     return [
       articlesRefObject[comment.article_title],
       comment.body,
