@@ -41,13 +41,6 @@ describe("GET /api/topics", () => {
       });
     })
   })
-
-  test("404: Responds with error if user does not input address correctly", () => {
-    return request(app)
-    .get("/api/topicz")
-    .expect(404)
-  })
-
 })
 
 describe("GET /api/articles/:article_id", () => {
@@ -83,5 +76,13 @@ describe("GET /api/articles/:article_id", () => {
     .then(({body: {msg }}) => {
       expect(msg).toBe("article not found")
     })
+  })
+})
+
+describe("ERROR invalid endpoint", () => {
+  test("404: Responds with error if user does not input api address correctly", () => {
+    return request(app)
+    .get("/api/topicz")
+    .expect(404)
   })
 })
