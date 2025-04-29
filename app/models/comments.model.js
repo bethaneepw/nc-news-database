@@ -7,7 +7,6 @@ exports.selectCommentsByArticleID = (articleId) => {
         SELECT * FROM comments
         WHERE article_id = $1 ORDER BY created_at ASC`, [articleId])
         .then(({rows}) => {
-
             if (rows.length === 0) {
                 return checkIfArticleExists(articleId).then((result) => {
                     if (result) {
@@ -17,7 +16,6 @@ exports.selectCommentsByArticleID = (articleId) => {
                     }
                 })
             }
-            
             return rows;
         })
 
