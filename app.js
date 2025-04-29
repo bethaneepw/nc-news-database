@@ -1,18 +1,18 @@
 const express = require("express")
 const app = express()
 const { getApi } = require("./app/controllers/api.controller")
+const { customErrorHandler, internalServerError, sqlErrorHandler } = require("./app/controllers/error.controller")
 const { getTopics } = require("./app/controllers/topics.controller")
-const { notFoundHandler, customErrorHandler, internalServerError, sqlErrorHandler } = require("./app/controllers/error.controller")
 const { getArticleById, getArticles } = require("./app/controllers/articles.controller")
+const { getCommentsByArticleId } = require ("./app/controllers/comments.controller")
 
 
 app.get("/api", getApi)
-
 app.get("/api/topics", getTopics)
-
 app.get("/api/articles", getArticles)
-
 app.get("/api/articles/:article_id", getArticleById)
+app.get("/api/articles/:article_id/comments", getCommentsByArticleId)
+
 
 app.use(sqlErrorHandler)
 app.use(customErrorHandler)

@@ -3,10 +3,9 @@ const seed = require("../db/seeds/seed")
 const data = require ("../db/data/test-data")
 const request = require("supertest")
 const app = require ("../app")
-const db = require("../db/connection")
-/* Set up your test imports here */
+const db = require("../db/connection");
+const { checkIfArticleExists } = require("../app/models/articles.model");
 
-/* Set up your beforeEach & afterAll functions here */
 beforeEach(() => {
   return seed(data)
 })
@@ -123,6 +122,74 @@ describe("GET /api/articles", () => {
   })
 })
 
+describe("GET /api/articles/:article_id/comments", () => {
+  test("200: Responds with all comments for an article", () => {
+    return request(app)
+    .get("/api/articles/3/comments")
+    .expect(200)
+    .then(({body : { comments }}) => {
+      expect(comments).toHaveLength(2)
+      comments.forEach((comment) => {
+        expect(comment).toMatchObject({
+          comment_id: expect.any(Number),
+          votes: expect.any(Number),
+          created_at: expect.any(String),
+          author: expect.any(String),
+          body: expect.any(String),
+          article_id: 3
+        })
+      })
+    })
+  })
+
+  test("200: Comments are served with the most recent comments first", () => {
+     return request(app)
+    .get("/api/articles/1/comments")
+    .expect(200)
+    .then(({body : { comments }}) => {
+      expect(comments).toBeSortedBy('created_at')
+    })
+  })
+
+  test("200: Responds with appropriate message if there are no comments for a valid article id", () => {
+    return request(app)
+    .get("/api/articles/2/comments")
+    .expect(200)
+    .then(({body : { msg }}) => {
+      expect(msg ).toBe("no comments found under article_id 2")
+    })
+  })
+
+  test("404: Responds with an error message if searching for comments for an article id that doesn't exist", () => {
+    return request(app).get("/api/articles/356/comments")
+    .expect(404)
+    .then(({body: {msg }}) => {
+      expect(msg).toBe("article not found")
+    })
+  })
+
+  test("400: Responds with an error message if searching for comments with an invalid article id", () => {
+    return request(app)
+    .get("/api/articles/banana/comments")
+    .expect(400)
+    .then(({body : {msg}}) => {
+      expect(msg).toBe("invalid data type for request")
+    })
+  })
+})
+
+describe("FUNCTION: checkIfArticleExists", () => {
+  test("returns true if article exists", () => {
+    return checkIfArticleExists(3).then((result)=> {
+      expect(result).toBe(true)
+    })
+  })
+  test("returns false if article exists", () => {
+    return checkIfArticleExists(356).then((result) => {
+      expect(result).toBe(false)
+    })
+  })
+})
 
 describe("ERROR invalid endpoint", () => {
   test("404: Responds with error if user does not input api address correctly", () => {

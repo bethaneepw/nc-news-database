@@ -1,5 +1,4 @@
 const db = require ("../../db/connection");
-const { commentData } = require("../../db/data/test-data");
 
 
 exports.selectArticleById = (articleId) => {
@@ -34,10 +33,14 @@ exports.selectArticles = () => {
                 })
             formattedArticles.push({...article, comment_count : commentCountToAdd})
             })
-        
         return formattedArticles 
+    })        
     })
-    
-        
+}
+
+exports.checkIfArticleExists = (articleId) => {
+    return db.query(`SELECT EXISTS (SELECT 1 from articles WHERE article_id = $1) AS "exists"`, [articleId])
+    .then(({rows})=> {
+        return rows[0].exists ? true : false
     })
 }
