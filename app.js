@@ -4,14 +4,17 @@ const { getApi } = require("./app/controllers/api.controller")
 const { customErrorHandler, internalServerError, sqlErrorHandler } = require("./app/controllers/error.controller")
 const { getTopics } = require("./app/controllers/topics.controller")
 const { getArticleById, getArticles } = require("./app/controllers/articles.controller")
-const { getCommentsByArticleId } = require ("./app/controllers/comments.controller")
+const { getCommentsByArticleId, postCommentByArticleId } = require ("./app/controllers/comments.controller")
 
+app.use(express.json());
 
 app.get("/api", getApi)
 app.get("/api/topics", getTopics)
 app.get("/api/articles", getArticles)
 app.get("/api/articles/:article_id", getArticleById)
 app.get("/api/articles/:article_id/comments", getCommentsByArticleId)
+
+app.post("/api/articles/:article_id/comments", postCommentByArticleId)
 
 
 app.use(sqlErrorHandler)

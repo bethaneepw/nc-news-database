@@ -178,6 +178,117 @@ describe("GET /api/articles/:article_id/comments", () => {
   })
 })
 
+describe("POST /api/articles/:article_id/comments", () => {
+  test("201: Responds with the added article", () => {
+    return request(app)
+    .post("/api/articles/1/comments")
+    .send({
+      username : "butter_bridge",
+      body: "just inserting a little comment!"
+    })
+    .expect(201)
+    .then(({ body : { comment }})=> {
+      expect(comment).toMatchObject({
+        comment_id: expect.any(Number),
+        votes: 0,
+        created_at: expect.any(String),
+        author: "butter_bridge",
+        body: "just inserting a little comment!",
+        article_id: 1
+      })
+    })
+  })
+
+  test("400: Responds with bad request if not given data type string", () => {
+    return request(app)
+    .post("/api/articles/1/comments")
+    .send({
+      username : "butter_bridge",
+      body: 2577
+    })
+    .expect(400)
+    .then(({ body : { msg }})=> {
+      expect(msg).toBe("invalid body")
+    })
+  })
+
+  test("400: Responds with bad request error when attempting to add comment with invalid username", () => {
+    return request(app)
+    .post("/api/articles/1/comments")
+    .send({
+      username : "bethanypw",
+      body: "just inserting a little comment!"
+    })
+    .expect(400)
+    .then(({ body : { msg }})=> {
+      expect(msg).toBe("required data not present")
+    })
+  })
+
+  test("400: Responds with bad request error when attempting to add comment without valid data", () => {
+    return request(app)
+    .post("/api/articles/1/comments")
+    .send({
+      username : "butter_bridge",
+    })
+    .expect(400)
+    .then(({ body : { msg }})=> {
+      expect(msg).toBe("invalid body")
+    })
+  })
+
+  test("400: Responds with bad request error when attempting to add comment without any username", () => {
+    return request(app)
+    .post("/api/articles/1/comments")
+    .send({
+      body: "this comment has no username",
+    })
+    .expect(400)
+    .then(({ body : { msg }})=> {
+      expect(msg).toBe("no username provided")
+    })
+  })
+
+  test("400: Responds with bad request error when attempting to add comment with username of incorrect data type", () => {
+    return request(app)
+    .post("/api/articles/1/comments")
+    .send({
+      username: 458,
+      body: "this comment has invalid username",
+    })
+    .expect(400)
+    .then(({ body : { msg }})=> {
+      expect(msg).toBe("required data not present")
+    })
+  })
+
+  test("400: Responds with bad request when attempting to add comment to an invalid article id", () => {
+    return request(app)
+    .post("/api/articles/banana/comments")
+    .send({
+      username : "butter_bridge",
+      body: "just inserting a little comment!"
+    })
+    .expect(400)
+    .then(({body : { msg }})=> {
+      expect(msg).toBe("invalid data type for request")
+    })
+  })
+
+  test("400: Responds with request when attempting to add comment to a valid article id not found within table", () => {
+    return request(app)
+    .post("/api/articles/356/comments")
+    .send({
+      username : "butter_bridge",
+      body: "just inserting a little comment!"
+    })
+    .expect(400)
+    .then(({body: {msg }}) => {
+      expect(msg).toBe("required data not present")
+    })
+  })
+})
+
 describe("FUNCTION: checkIfArticleExists", () => {
   test("returns true if article exists", () => {
     return checkIfArticleExists(3).then((result)=> {
