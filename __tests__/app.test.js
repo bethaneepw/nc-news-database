@@ -359,6 +359,32 @@ describe("PATCH:  /api/articles/:article_id", () => {
   })
 })
 
+describe("DELETE: /api/comments/:comment_id", () => {
+  test("204: Deletes the given comment by comment_id", () => {
+    return request(app)
+    .delete("/api/comments/10")
+    .expect(204)
+  })
+
+  test("400: Responds with bad request if comment_id contains invalid data", () => {
+    return request(app)
+    .delete("/api/comments/banana")
+    .expect(400)
+    .then(({body : {msg}}) => {
+      expect(msg).toBe("invalid data type for request")
+    })
+  })
+
+  test("404: Responds with not found if comment_id contains data for comment that does not exist", () => {
+    return request(app)
+    .delete("/api/comments/356")
+    .expect(404)
+    .then(({body : {msg }}) => {
+      expect(msg).toBe("comment not found")
+    })
+  })
+})
+
 describe("ERROR invalid endpoint", () => {
   test("404: Responds with error if user inputs an invalid endpoint", () => {
     return request(app)

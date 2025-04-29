@@ -1,11 +1,11 @@
 const { selectArticleById } = require("../models/articles.model")
-const { selectCommentsByArticleID, insertCommentByArticleID } = require ("../models/comments.model")
+const { selectCommentsByArticleId, insertCommentByArticleId, removeCommentById } = require ("../models/comments.model")
 
 
 exports.getCommentsByArticleId = (req, res, next) => {
     const articleId = req.params.article_id
     return selectArticleById(articleId).then(()=>{
-    return selectCommentsByArticleID(articleId).then((comments) => {
+    return selectCommentsByArticleId(articleId).then((comments) => {
         if (comments.msg) {
             res.status(200).send({ msg : comments.msg })
         } else {
@@ -21,11 +21,21 @@ exports.getCommentsByArticleId = (req, res, next) => {
 exports.postCommentByArticleId = (req, res, next) => {
     const articleId = req.params.article_id
     const commentToPost = req.body
-    return insertCommentByArticleID(articleId, commentToPost).then((comment) => {
+    return insertCommentByArticleId(articleId, commentToPost).then((comment) => {
         res.status(201).send({ comment })
     })
     .catch((err) => {
        next (err)
     })
 
+}
+
+exports.deleteCommentById = (req, res, next) => {
+    const commentId = req.params.comment_id
+    return removeCommentById(commentId).then(()=> {
+        res.status(204).send();
+    })
+    .catch((err)=> {
+        next(err)
+    })
 }

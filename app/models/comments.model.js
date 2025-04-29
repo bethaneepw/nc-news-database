@@ -4,7 +4,7 @@ const { checkIfArticleExists } = require("./articles.model")
 const format = require("pg-format")
 
 
-exports.selectCommentsByArticleID = (articleId) => {
+exports.selectCommentsByArticleId = (articleId) => {
     return db.query(`
         SELECT * FROM comments
         WHERE article_id = $1 ORDER BY created_at ASC`, [articleId])
@@ -14,7 +14,7 @@ exports.selectCommentsByArticleID = (articleId) => {
         })
 }
 
-exports.insertCommentByArticleID = (articleId, commentToPost) => {
+exports.insertCommentByArticleId = (articleId, commentToPost) => {
     if (commentToPost.body === undefined || typeof commentToPost.body !== "string") {
         return Promise.reject({status: 400, msg: "invalid body"})
     }
@@ -33,4 +33,13 @@ exports.insertCommentByArticleID = (articleId, commentToPost) => {
     return db.query(queryStr).then(({rows}) => {
         return rows[0];
  })
+}
+
+exports.removeCommentById = (commentId) => {
+    console.log(commentId)
+    return db.query(`DELETE FROM comments WHERE comment_id = $1 RETURNING *;`, [commentId]).then(({rows})=> {
+        if (rows.length === 0) {
+            return Promise.reject({status: 404, msg: "comment not found"})
+        }
+    })
 }
