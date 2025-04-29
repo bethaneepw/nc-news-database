@@ -50,6 +50,7 @@
       }]
     }
   },
+  
   "POST /api/articles/:article_id/comments":{
     "description": "adds a comment to an article according to given article id",
         "exampleResponse": {

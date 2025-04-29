@@ -52,6 +52,7 @@ describe("GET /api/articles/:article_id", () => {
         article_id: 4,
         title: expect.any(String),
         author: expect.any(String),
+        topic: expect.any(String),
         body: expect.any(String),
         created_at: expect.any(String),
         votes: expect.any(Number),
@@ -285,6 +286,75 @@ describe("POST /api/articles/:article_id/comments", () => {
     .expect(400)
     .then(({body: {msg }}) => {
       expect(msg).toBe("required data not present")
+    })
+  })
+})
+
+describe.only("PATCH:  /api/articles/:article_id", () => {
+  test("200: Responds with the updated article", () => {
+    return request(app)
+    .patch("/api/articles/1")
+    .send({ inc_votes: 3 })
+    .expect(200)
+    .then(({ body : {article}})=> {
+      expect(article).toMatchObject({
+        article_id: 1,
+        title: "Living in the shadow of a great man",
+        author: "butter_bridge",
+        topic: "mitch",
+        body: "I find this existence challenging",
+        created_at: "2020-07-09T20:11:00.000Z",
+        votes: 103,
+        article_img_url: "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700"
+      })
+    })
+  })
+
+  test("200: Responds with the updated article when decrementing votes", () => {
+    return request(app)
+    .patch("/api/articles/1")
+    .send({ inc_votes: -40 })
+    .expect(200)
+    .then(({ body : {article}})=> {
+      expect(article).toMatchObject({
+        article_id: 1,
+        title: "Living in the shadow of a great man",
+        author: "butter_bridge",
+        topic: "mitch",
+        body: "I find this existence challenging",
+        created_at: "2020-07-09T20:11:00.000Z",
+        votes: 60,
+        article_img_url: "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700"
+      })
+    })
+  })
+
+  test("400: Responds with PSQL error if request contains invalid data", () => {
+    return request(app)
+    .patch("/api/articles/1/")
+    .send({ inc_votes: "hello!" })
+    .expect(400)
+    .then(({body : {msg}}) => {
+      expect(msg).toBe("invalid data type for request")
+    })
+  })
+
+  test("400: Responds with PSQL error if article_id contains invalid data", () => {
+    return request(app)
+    .patch("/api/articles/banana/")
+    .send({ inc_votes: 3 })
+    .expect(400)
+    .then(({body : {msg}}) => {
+      expect(msg).toBe("invalid data type for request")
+    })
+  })
+
+  test("404: Responds with not found if article does not exist under article_id", () => {
+    return request(app).patch("/api/articles/356/")
+    .send({ inc_votes: 3 })
+    .expect(404)
+    .then(({body: {msg }}) => {
+      expect(msg).toBe("article not found")
     })
   })
 })
