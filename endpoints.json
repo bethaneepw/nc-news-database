@@ -36,5 +36,20 @@
           "comment_count": 6
         }
     }
+  },
+  "GET /api/articles/:article_id/comments":{
+    "description": "serves array of comment objects according to given article id",
+    "exampleResponse": {
+      "comments": [{
+        "comment_id": 10,
+        "article_id": 3,
+        "body": "git push origin master",
+        "votes": 0,
+        "author": "icellusedkars",
+        "created_at": "2020-06-20T07:24:00.000Z"
+      }]
+    }
   }
 }
+
+
