@@ -41,7 +41,6 @@ exports.selectArticles = () => {
 exports.updateArticleById = (articleId, votesToInc) => {
     if (votesToInc === undefined) {
         return Promise.reject({status: 404, msg: "article not found"})
-        
     }
     
     const queryValues = [votesToInc, articleId]
@@ -57,9 +56,3 @@ exports.updateArticleById = (articleId, votesToInc) => {
     })
 }
 
-exports.checkIfArticleExists = (articleId) => {
-    return db.query(`SELECT EXISTS (SELECT 1 from articles WHERE article_id = $1) AS "exists"`, [articleId])
-    .then(({rows})=> {
-        return rows[0].exists ? true : false
-    })
-}

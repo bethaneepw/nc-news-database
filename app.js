@@ -18,6 +18,9 @@ app.post("/api/articles/:article_id/comments", postCommentByArticleId)
 
 app.patch("/api/articles/:article_id", patchArticleById)
 
+app.all("/*splat", (req, res) => {
+    res.status(404).send({msg: "path not found"})
+})
 
 app.use(sqlErrorHandler)
 app.use(customErrorHandler)
