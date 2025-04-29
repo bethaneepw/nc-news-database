@@ -152,12 +152,12 @@ describe("GET /api/articles/:article_id/comments", () => {
     })
   })
 
-  test("200: Responds with appropriate message if there are no comments for a valid article id", () => {
+  test("200: Responds with empty array if there are no comments for a valid article id", () => {
     return request(app)
     .get("/api/articles/2/comments")
     .expect(200)
-    .then(({body : { msg }}) => {
-      expect(msg ).toBe("no comments found under article_id 2")
+    .then(({body : { comments }}) => {
+      expect( comments ).toEqual([])
     })
   })
 
@@ -290,7 +290,7 @@ describe("POST /api/articles/:article_id/comments", () => {
   })
 })
 
-describe.only("PATCH:  /api/articles/:article_id", () => {
+describe("PATCH:  /api/articles/:article_id", () => {
   test("200: Responds with the updated article", () => {
     return request(app)
     .patch("/api/articles/1")
@@ -359,23 +359,13 @@ describe.only("PATCH:  /api/articles/:article_id", () => {
   })
 })
 
-describe("FUNCTION: checkIfArticleExists", () => {
-  test("returns true if article exists", () => {
-    return checkIfArticleExists(3).then((result)=> {
-      expect(result).toBe(true)
-    })
-  })
-  test("returns false if article exists", () => {
-    return checkIfArticleExists(356).then((result) => {
-      expect(result).toBe(false)
-    })
-  })
-})
-
 describe("ERROR invalid endpoint", () => {
-  test("404: Responds with error if user does not input api address correctly", () => {
+  test("404: Responds with error if user inputs an invalid endpoint", () => {
     return request(app)
     .get("/api/topicz")
     .expect(404)
+    .then(({body: {msg}}) => {
+      expect(msg).toBe("path not found")
+    })
   })
 })
