@@ -21,6 +21,11 @@ exports.selectArticles = (query) => {
     const acceptedSortQueries = ["", "created_at", "topic", "author", "votes"]
     const acceptedOrderQueries = ["ASC", "DESC"]
     
+    if (query.topic) {
+        queryStr += ` WHERE topic = $1`
+        queryValues.push(query.topic)
+    }
+
     if (query.sort_by) {
         if (!acceptedSortQueries.includes(query.sort_by)) {
         return Promise.reject({ status: 404, msg: "not found: invalid sort query"})
@@ -50,7 +55,7 @@ exports.selectArticles = (query) => {
     GROUP BY article_id`).then(({rows}) => {
 
     const commentCounts = rows
-    return db.query(queryStr)
+    return db.query(queryStr, queryValues)
         .then(({rows})=> {
             formattedArticles = []
             rows.forEach((article) => {
