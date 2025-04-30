@@ -5,6 +5,7 @@ const { customErrorHandler, internalServerError, sqlErrorHandler } = require("./
 const { getTopics } = require("./app/controllers/topics.controller")
 const { getArticleById, getArticles, patchArticleById } = require("./app/controllers/articles.controller")
 const { getCommentsByArticleId, postCommentByArticleId, deleteCommentById } = require ("./app/controllers/comments.controller")
+const { getUsers } = require("./app/controllers/users.controller")
 
 app.use(express.json());
 
@@ -13,6 +14,7 @@ app.get("/api/topics", getTopics)
 app.get("/api/articles", getArticles)
 app.get("/api/articles/:article_id", getArticleById)
 app.get("/api/articles/:article_id/comments", getCommentsByArticleId)
+app.get("/api/users", getUsers)
 
 app.post("/api/articles/:article_id/comments", postCommentByArticleId)
 
