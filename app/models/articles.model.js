@@ -1,18 +1,13 @@
 const db = require ("../../db/connection");
 
 
-exports.selectArticleById = (articleId) => {
-    return db.query(`
-        SELECT * FROM articles
-        WHERE article_id = $1`, [articleId])
-        .then(({rows}) => {
-            if (rows.length === 0) {
-                return Promise.reject({status: 404, msg: "article not found"})
-            } else {
-                return rows[0];
-            }
-        })
- 
+function selectCommentCountsOfArticles() {
+    return db.query(`SELECT article_id, COUNT(*) AS comment_count 
+    FROM comments 
+    GROUP BY article_id`)
+    .then(({rows})=>{
+        return rows;
+    })
 }
 
 exports.selectArticles = (query) => {
@@ -49,12 +44,8 @@ exports.selectArticles = (query) => {
             queryStr += ` DESC`
         }
     } else queryStr += ` DESC`
-
-    return db.query(`SELECT article_id, COUNT(*) AS comment_count 
-    FROM comments 
-    GROUP BY article_id`).then(({rows}) => {
-
-    const commentCounts = rows
+    return selectCommentCountsOfArticles()
+    .then((commentCounts) => {
     return db.query(queryStr, queryValues)
         .then(({rows})=> {
             formattedArticles = []
@@ -73,6 +64,34 @@ exports.selectArticles = (query) => {
     })
 }
 
+exports.selectArticleById = (articleId) => {
+    return selectCommentCountsOfArticles()
+    .then((commentCounts)=> {
+        return db.query(`
+        SELECT * FROM articles
+        WHERE article_id = $1`, [articleId])
+    
+    .then(({rows}) => {
+        if (rows.length === 0) {
+            return Promise.reject({status: 404, msg: "article not found"})
+        } else {
+            const obj = {...rows[0], comment_count: 0}
+
+            commentCounts.forEach((commentCount)=>{
+                if (commentCount.article_id === Number(articleId)) {
+                    obj.comment_count += Number(commentCount.comment_count)
+                }
+            })
+            
+            return obj;
+
+        }
+    })
+    
+        
+        })
+ 
+}
 exports.updateArticleById = (articleId, votesToInc) => {
     if (votesToInc === undefined) {
         return Promise.reject({status: 404, msg: "article not found"})
@@ -90,4 +109,5 @@ exports.updateArticleById = (articleId, votesToInc) => {
             }
     })
 }
+
 
