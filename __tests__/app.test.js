@@ -4,7 +4,6 @@ const data = require ("../db/data/test-data")
 const request = require("supertest")
 const app = require ("../app")
 const db = require("../db/connection");
-const { checkIfArticleExists } = require("../app/models/articles.model");
 
 beforeEach(() => {
   return seed(data)
@@ -46,18 +45,19 @@ describe("GET /api/topics", () => {
 describe("GET /api/articles/:article_id", () => {
   test("200: Responds with the correct article", () => {
     return request(app)
-    .get("/api/articles/4")
+    .get("/api/articles/5")
     .expect(200)
     .then(({body : { article }}) => {
       expect(article).toMatchObject({
-        article_id: 4,
-        title: expect.any(String),
-        author: expect.any(String),
-        topic: expect.any(String),
-        body: expect.any(String),
-        created_at: expect.any(String),
-        votes: expect.any(Number),
-        article_img_url: expect.any(String)
+        article_id: 5,
+        title: 'UNCOVERED: catspiracy to bring down democracy',
+        author: 'rogersop',
+        topic: 'cats',
+        body: 'Bastet walks amongst us, and the cats are taking arms!',
+        created_at: "2020-08-03T13:14:00.000Z",
+        votes: 0,
+        article_img_url: "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+        comment_count: 2
       })
     })
   })
