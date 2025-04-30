@@ -100,7 +100,7 @@ describe("GET /api/articles", () => {
       })
     })
   })
-  
+
   test("200: Article objects do not contain a body property", () => {
     return request(app)
     .get("/api/articles")
@@ -113,7 +113,7 @@ describe("GET /api/articles", () => {
     })
   })
 
-  test("200: Response is sorted by date in descending order", () => {
+  test("200: Response is ordered by date descending order by default", () => {
     return request(app)
     .get("/api/articles")
     .expect(200)
@@ -121,6 +121,107 @@ describe("GET /api/articles", () => {
       expect(articles).toBeSortedBy('created_at', { descending: true })
     })
   })
+  
+  test("200: Accepts a sort_by query, which defaults to the created at data", () => {
+    return request(app)
+    .get("/api/articles?sort_by")
+    .expect(200)
+    .then(({body : {articles }}) => {
+      expect(articles).toBeSortedBy('created_at', { descending: true })
+    })
+
+  })
+
+  test("200: Accepts a sort_by query for created at data", () => {
+    return request(app)
+    .get("/api/articles?sort_by=created_at")
+    .expect(200)
+    .then(({body : {articles }}) => {
+      expect(articles).toBeSortedBy('created_at', { descending: true })
+    })
+  })
+
+  test("200: Accepts a sort_by query for topics", () => {
+    return request(app)
+    .get("/api/articles?sort_by=topic")
+    .expect(200)
+    .then(({body : {articles }}) => {
+      expect(articles).toBeSortedBy('topic', { descending: true })
+    })
+  })
+
+  test("200: Accepts a sort_by query for authors", () => {
+    return request(app)
+    .get("/api/articles?sort_by=author")
+    .expect(200)
+    .then(({body : {articles }}) => {
+      expect(articles).toBeSortedBy('author', { descending: true })
+    })
+  })
+
+  test("200: Accepts a sort_by query for votes", () => {
+    return request(app)
+    .get("/api/articles?sort_by=votes")
+    .expect(200)
+    .then(({body : {articles }}) => {
+      expect(articles).toBeSortedBy('votes', { descending: true })
+    })
+  })
+
+  test("200: Accepts an order query which defaults to descending", () => {
+    return request(app)
+    .get("/api/articles?order")
+    .expect(200)
+    .then(({body : {articles }}) => {
+      expect(articles).toBeSortedBy('created_at', { descending: true })
+    })
+  })
+
+  test("200: Accepts an order query, which can be set to desc", () => {
+    return request(app)
+    .get("/api/articles?order=desc")
+    .expect(200)
+    .then(({body : {articles }}) => {
+      expect(articles).toBeSortedBy('created_at', { descending: true })
+    })
+  })
+
+  test("200: Accepts an order query, which can be set to asc", () => {
+    return request(app)
+    .get("/api/articles?order=asc")
+    .expect(200)
+    .then(({body : {articles }}) => {
+      expect(articles).toBeSortedBy('created_at')
+    })
+  })
+
+  test("200: Accepts an order query when given multiple queries", () => {
+    return request(app)
+    .get("/api/articles?sort_by=author&order=asc")
+    .expect(200)
+    .then(({body : {articles }}) => {
+      expect(articles).toBeSortedBy('author')
+    })
+  })
+
+  test("404: No data found for invalid sort query", () => {
+    return request(app)
+    .get("/api/articles?sort_by=banana")
+    .expect(404)
+    .then(({body : { msg }}) => {
+      expect(msg).toBe('not found: invalid sort query')
+    })
+  })
+
+  test("404: No data found for invalid order query", () => {
+    return request(app)
+    .get("/api/articles?order=banana")
+    .expect(404)
+    .then(({body : { msg }}) => {
+      expect(msg).toBe('not found: invalid order query')
+    })
+  })
+
 })
 
 describe("GET /api/articles/:article_id/comments", () => {
