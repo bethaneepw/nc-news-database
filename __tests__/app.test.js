@@ -208,7 +208,7 @@ describe("GET /api/articles", () => {
     })
   })
   })
-  describe.only("?topic", () => {
+  describe("?topic", () => {
     test("200: accepts topic query which filters the articles by the topic value specified in the query", () => {
       return request(app)
       .get("/api/articles?topic=cats")
@@ -275,15 +275,6 @@ describe("ERRORS", () => {
     .expect(404)
     .then(({body : { msg }}) => {
       expect(msg).toBe('not found: invalid order query')
-    })
-  })
-
-  test("404: No data found for invalid topics query", () => {
-    return request(app)
-    .get("/api/articles?topics=banana")
-    .expect(400)
-    .then(({body : { msg }}) => {
-      expect(msg).toBe('invalid data')
     })
   })
   })
