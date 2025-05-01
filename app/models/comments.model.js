@@ -1,6 +1,4 @@
-const e = require("express");
 const db = require ("../../db/connection");
-const { checkIfArticleExists } = require("./articles.model")
 const format = require("pg-format")
 
 

@@ -1,4 +1,5 @@
 const db = require ("../../db/connection");
+const format = require("pg-format")
 
 
 function selectCommentCountsOfArticles() {
@@ -103,6 +104,22 @@ exports.updateArticleById = (articleId, votesToInc) => {
             } else {
                 return rows[0];
             }
+    })
+}
+
+exports.addArticle = (articleInfo) => {
+const articleInfoArr = [
+    [
+    articleInfo.author,
+    articleInfo.body,
+    articleInfo.title,
+    articleInfo.topic,
+]]
+
+queryStr = format(`INSERT INTO articles (author, body, title, topic) VALUES %L RETURNING *;`, articleInfoArr)
+    return db.query(queryStr).then(({rows}) => {
+        const obj = {...rows[0], comment_count: 0}
+        return obj;
     })
 }
 

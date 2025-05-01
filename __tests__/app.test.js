@@ -337,7 +337,7 @@ describe("GET /api/articles/:article_id/comments", () => {
 })
 
 describe("POST /api/articles/:article_id/comments", () => {
-  test("201: Responds with the added article", () => {
+  test("201: Responds with the added comment", () => {
     return request(app)
     .post("/api/articles/1/comments")
     .send({
@@ -357,12 +357,12 @@ describe("POST /api/articles/:article_id/comments", () => {
     })
   })
 
-  test("400: Responds with bad request if not given data type string", () => {
+  test("400: Responds with bad request if given invalid data for body", () => {
     return request(app)
     .post("/api/articles/1/comments")
     .send({
       username : "butter_bridge",
-      body: 2577
+      body: {body: "hello"}
     })
     .expect(400)
     .then(({ body : { msg }})=> {
@@ -379,7 +379,7 @@ describe("POST /api/articles/:article_id/comments", () => {
     })
     .expect(400)
     .then(({ body : { msg }})=> {
-      expect(msg).toBe("required data not present")
+      expect(msg).toBe("required data not provided")
     })
   })
 
@@ -416,7 +416,7 @@ describe("POST /api/articles/:article_id/comments", () => {
     })
     .expect(400)
     .then(({ body : { msg }})=> {
-      expect(msg).toBe("required data not present")
+      expect(msg).toBe("required data not provided")
     })
   })
 
@@ -442,7 +442,7 @@ describe("POST /api/articles/:article_id/comments", () => {
     })
     .expect(400)
     .then(({body: {msg }}) => {
-      expect(msg).toBe("required data not present")
+      expect(msg).toBe("required data not provided")
     })
   })
 })
@@ -659,6 +659,93 @@ describe("PATCH: /api/comments/:comment_id", () => {
       expect(msg).toBe("comment not found")
     })
   })
+})
+
+describe("POST: /api/articles", () => {
+  test("201: Responds with the added article", ()=> {
+    return request(app)
+    .post("/api/articles")
+    .send({
+      author: "lurker",
+      title: "Testing title!",
+      body:"My cat Mavis is the superior cat!",
+      topic: "cats"
+    })
+    .expect(201)
+    .then(({body : { article }}) => {
+      expect(article).toMatchObject({
+      author: "lurker",
+      title: "Testing title!",
+      body:"My cat Mavis is the superior cat!",
+      topic: "cats",
+      article_id: 14,
+      votes: 0,
+      created_at: expect.any(String),
+      comment_count: 0
+      })
+    })
+  })
+
+  test("400: PSQL when added by an invalid username", () => {
+    return request(app)
+    .post("/api/articles")
+    .send({
+      author: "",
+      title: "Testing title!",
+      body:"My cat Mavis is the superior cat!",
+      topic: "cats"
+    })
+    .expect(400)
+    .then(({body : { msg }}) => {
+      expect(msg).toBe("required data not provided")
+    })
+  })
+
+  test("400: Bad request when topic not valid", () => {
+    return request(app)
+    .post("/api/articles")
+    .send({
+      author: "lurker",
+      title: "Testing title!",
+      body:"My cat Mavis is the superior cat!",
+      topic: "Mavis"
+    })
+    .expect(400)
+    .then(({body : { msg }}) => {
+      expect(msg).toBe("required data not provided")
+    })
+  })
+
+  test("400: Bad request when given invalid body", () => {
+    return request(app)
+    .post("/api/articles")
+    .send({
+      author: "lurker",
+      title: "Testing title!",
+      body: {hello : 2},
+      topic: "dogs"
+    })
+    .expect(400)
+    .then(({body : { msg }}) => {
+      expect(msg).toBe("required data not provided")
+    })
+  })
+
+  test("400: Bad request when given invalid title", () => {
+    return request(app)
+    .post("/api/articles")
+    .send({
+      author: "lurker",
+      title: {title : 2334},
+      body:"My cat Mavis is the superior cat!",
+      topic: "Mavis"
+    })
+    .expect(400)
+    .then(({body : { msg }}) => {
+      expect(msg).toBe("required data not provided")
+    })
+  })
+
 })
 
 describe("ERROR invalid endpoint", () => {
