@@ -92,11 +92,7 @@ exports.selectArticleById = (articleId) => {
         })
  
 }
-exports.updateArticleById = (articleId, votesToInc) => {
-    if (votesToInc === undefined) {
-        return Promise.reject({status: 404, msg: "article not found"})
-    }
-    
+exports.updateArticleById = (articleId, votesToInc) => { 
     const queryValues = [votesToInc, articleId]
            
      return db.query(`UPDATE articles

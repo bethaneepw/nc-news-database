@@ -594,6 +594,73 @@ describe("GET: /api/users/:username", () => {
 
 })
 
+describe("PATCH: /api/comments/:comment_id", () => {
+  test("200: Responds with updated comment by given comment_id", () => {
+    return request(app)
+    .patch("/api/comments/18")
+    .send({ inc_votes: 4 })
+    .expect(200)
+    .then(({body : { comment }})=> {
+      expect(comment).toMatchObject({
+        article_id: 1,
+        comment_id: 18,
+        body: "This morning, I showered for nine minutes.",
+        votes: 20,
+        author: "butter_bridge",
+        created_at: expect.any(String),
+      })
+    })
+  })
+
+  test("200: Responds with updated comment by given comment_id when decrementing votes", () => {
+    return request(app)
+    .patch("/api/comments/18")
+    .send({ inc_votes: -6 })
+    .expect(200)
+    .then(({body : { comment }})=> {
+      expect(comment).toMatchObject({
+        article_id: 1,
+        comment_id: 18,
+        body: "This morning, I showered for nine minutes.",
+        votes: 10,
+        author: "butter_bridge",
+        created_at: expect.any(String),
+      })
+    })
+  })
+
+  test("400: Responds with bad request if request contains invalid data", () => {
+    return request(app)
+    .patch("/api/comments/18")
+    .send({ inc_votes: "banana" })
+    .expect(400)
+    .then(({body : {msg}})=> {
+      expect(msg).toBe("invalid data type for request")
+    })
+  })
+
+  test("400: Responds with bad request if comment_id contains invalid data", () => {
+    return request(app)
+    .patch("/api/comments/banana")
+    .send({ inc_votes: 4 })
+    .expect(400)
+    .then(({body : {msg}})=> {
+      expect(msg).toBe("invalid data type for request")
+    })
+    
+  })
+
+  test("404: Responds with not found if comment_id is valid but does not exist", () => {
+    return request(app)
+    .patch("/api/comments/19")
+    .send({ inc_votes: 4 })
+    .expect(404)
+    .then(({body : {msg}})=> {
+      expect(msg).toBe("comment not found")
+    })
+  })
+})
+
 describe("ERROR invalid endpoint", () => {
   test("404: Responds with error if user inputs an invalid endpoint", () => {
     return request(app)
