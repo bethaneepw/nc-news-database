@@ -4,8 +4,9 @@ const { selectCommentsByArticleId, insertCommentByArticleId, removeCommentById, 
 
 exports.getCommentsByArticleId = (req, res, next) => {
     const articleId = req.params.article_id
+    const query = req.query
     return selectArticleById(articleId).then(()=>{
-    return selectCommentsByArticleId(articleId).then((comments) => {
+    return selectCommentsByArticleId(articleId, query).then((comments) => {
         if (comments.msg) {
             res.status(200).send({ msg : comments.msg })
         } else {

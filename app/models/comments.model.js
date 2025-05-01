@@ -2,12 +2,25 @@ const db = require ("../../db/connection");
 const format = require("pg-format")
 
 
-exports.selectCommentsByArticleId = (articleId) => {
-    return db.query(`
-        SELECT * FROM comments
-        WHERE article_id = $1 ORDER BY created_at ASC`, [articleId])
+exports.selectCommentsByArticleId = (articleId, query) => {
+    
+    const queryValues = [articleId]
+    let queryCount = 1;
+    let queryStr = `SELECT * FROM comments
+        WHERE article_id = $${queryCount} ORDER BY created_at ASC`
+
+    const limit = query.limit ? parseInt(query.limit) : 10
+    const page = query.p ? parseInt(query.p) : 1
+    const offset = (page - 1) * limit;
+
+    queryValues.push(limit, offset)
+    queryStr += ` LIMIT $${++queryCount} OFFSET $${++queryCount}`
+    return db.query(queryStr, queryValues)
         .then(({rows}) => {
 
+            if(rows.length === 0 && query.p) {
+                return Promise.reject({status: 404, msg: "page not found"})
+            }
             return rows;
         })
 }

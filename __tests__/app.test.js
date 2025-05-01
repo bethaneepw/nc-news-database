@@ -460,6 +460,82 @@ describe("GET /api/articles/:article_id/comments", () => {
     })
   })
 
+ test("200: Responds with 10 comments by default", () => {
+    return request(app)
+      .get("/api/articles/1/comments")
+      .expect(200)
+      .then(({body: { comments }}) => {
+        expect(comments).toHaveLength(10)
+        comments.forEach((comment) => {
+          expect(comment).toMatchObject({
+            comment_id: expect.any(Number),
+            votes: expect.any(Number),
+            created_at: expect.any(String),
+            author: expect.any(String),
+            body: expect.any(String),
+            article_id: 1
+        });
+      })
+    })
+  })
+
+  test("200: Responds with specified number of articles using limit", () => {
+    return request(app)
+      .get("/api/articles/1/comments?limit=5")
+      .expect(200)
+      .then(({body: { comments }}) => {
+        expect(comments).toHaveLength(5)
+        comments.forEach((comment) => {
+          expect(comment).toMatchObject({
+            comment_id: expect.any(Number),
+            votes: expect.any(Number),
+            created_at: expect.any(String),
+            author: expect.any(String),
+            body: expect.any(String),
+            article_id: 1
+          });
+        });
+      });
+  });
+
+  test("200: Responds with specified number of articles using limit beyond total articles", () => {
+    return request(app)
+      .get("/api/articles/1/comments?limit=20")
+      .expect(200)
+      .then(({body: { comments }}) => {
+        expect(comments.length).toBeLessThanOrEqual(20)
+        comments.forEach((comment) => {
+          expect(comment).toMatchObject({
+            comment_id: expect.any(Number),
+            votes: expect.any(Number),
+            created_at: expect.any(String),
+            author: expect.any(String),
+            body: expect.any(String),
+            article_id: 1
+          });
+        });
+      });
+  });
+
+  test("200: Responds with specified number of articles using limit and looking at 2nd page", () => {
+    return request(app)
+      .get("/api/articles/1/comments?limit=3&p=2")
+      .expect(200)
+      .then(({body: { comments }}) => {
+        expect(comments).toHaveLength(3)
+        comments.forEach((comment) => {
+          expect(comment).toMatchObject({
+            comment_id: expect.any(Number),
+            votes: expect.any(Number),
+            created_at: expect.any(String),
+            author: expect.any(String),
+            body: expect.any(String),
+            article_id: 1
+          });
+        });
+      });
+  });
+
   test("404: Responds with an error message if searching for comments for an article id that doesn't exist", () => {
     return request(app).get("/api/articles/356/comments")
     .expect(404)
@@ -476,7 +552,37 @@ describe("GET /api/articles/:article_id/comments", () => {
       expect(msg).toBe("invalid data type for request")
     })
   })
+
+  test("400: invalid limit query", () => {
+    return request(app)
+    .get("/api/articles/1/comments?limit=abc")
+    .expect(400)
+    .then(({ body : {msg}}) => {
+      expect(msg).toBe("invalid data type for request")
+    })
+  })
+
+  test("400: negative limit query", () => {
+    return request(app)
+    .get("/api/articles/1/comments?limit=-1")
+    .expect(400)
+    .then(({ body : {msg}}) => {
+      expect(msg).toBe("invalid query for limit")
+    })
+  })
+
+  test("404: page not found for large page request", () => {
+    return request(app)
+    .get("/api/articles/1/comments?limit=5&p=200")
+    .expect(404)
+    .then(({ body : {msg}}) => {
+      expect(msg).toBe("page not found")
+    })
+  })
+  
 })
+  
+
 
 describe("POST /api/articles/:article_id/comments", () => {
   test("201: Responds with the added comment", () => {
