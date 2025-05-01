@@ -11,7 +11,7 @@
   },
   "GET /api/articles": {
     "description": "serves an array of all articles",
-    "queries": ["sort_by", "order"],
+    "queries": ["sort_by", "order", "limit", "p"],
     "exampleResponse": {
       "articles": [
         {
@@ -40,6 +40,7 @@
   },
   "GET /api/articles/:article_id/comments":{
     "description": "serves array of comment objects according to given article id",
+    "queries": ["limit", "p"],
     "exampleResponse": {
       "comments": [{
         "comment_id": 10,
