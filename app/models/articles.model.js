@@ -16,15 +16,21 @@ exports.selectArticles = (query) => {
     const queryValues = []
     const acceptedSortQueries = ["", "created_at", "topic", "author", "votes"]
     const acceptedOrderQueries = ["ASC", "DESC"]
+    let queryCount = 0
+    let whereValues = []    
     
+    let countQueryStr = `SELECT COUNT(*) FROM articles`
+
     if (query.topic) {
-        queryStr += ` WHERE topic = $1`
+        queryStr += ` WHERE topic = $${++queryCount}`
         queryValues.push(query.topic)
+        countQueryStr += ` WHERE topic = $${queryCount}`
+        whereValues.push(query.topic)
     }
 
     if (query.sort_by) {
         if (!acceptedSortQueries.includes(query.sort_by)) {
-        return Promise.reject({ status: 404, msg: "not found: invalid sort query"})
+        return Promise.reject({ status: 400, msg: "bad request: invalid sort query"})
     };
         if (query.sort_by === "") {
             query.sort_by = "created_at"
@@ -36,7 +42,7 @@ exports.selectArticles = (query) => {
     
     if (query.order) {
         if (!acceptedOrderQueries.includes(query.order.toUpperCase())) {
-            return Promise.reject({ status: 404, msg: "not found: invalid order query"})
+            return Promise.reject({ status: 400, msg: "bad request: invalid order query"})
         }
         
         if (query.order.toUpperCase() === `ASC`) {
@@ -45,12 +51,27 @@ exports.selectArticles = (query) => {
             queryStr += ` DESC`
         }
     } else queryStr += ` DESC`
-    return selectCommentCountsOfArticles()
-    .then((commentCounts) => {
-    return db.query(queryStr, queryValues)
-        .then(({rows})=> {
-            formattedArticles = []
-            rows.forEach((article) => {
+
+    // pagination
+    const limit = query.limit ? parseInt(query.limit) : 10
+    const page = query.p ? parseInt(query.p) : 1;
+
+    const offset = (page - 1) * limit;
+    queryValues.push(limit, offset);
+    queryStr += ` LIMIT $${++queryCount} OFFSET $${++queryCount}`;
+
+    return Promise.all([selectCommentCountsOfArticles(),
+    db.query(queryStr, queryValues),
+    db.query(countQueryStr, whereValues)])
+    .then(([commentCounts, articlesResult, totalCountResult]) => {
+
+        if(articlesResult.rows.length === 0 && whereValues.length === 0) {
+            return Promise.reject({status: 404, msg: "page not found"})
+        }
+
+        formattedArticles = []
+
+        articlesResult.rows.forEach((article) => {
             delete article.body
             let commentCountToAdd = 0
                 commentCounts.forEach((commentCount) => {
@@ -60,10 +81,12 @@ exports.selectArticles = (query) => {
                 })
             formattedArticles.push({...article, comment_count : commentCountToAdd})
             })
-        return formattedArticles 
-    })        
-    })
-}
+
+        return {articles : formattedArticles, total_count: Number(totalCountResult.rows[0].count)}
+
+        })
+       
+    }
 
 exports.selectArticleById = (articleId) => {
     return selectCommentCountsOfArticles()

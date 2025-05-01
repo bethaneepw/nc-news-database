@@ -82,12 +82,12 @@ describe("GET /api/articles/:article_id", () => {
 
 describe("GET /api/articles", () => {
   describe("GET /api/articles", () => {
-    test("200: Responds with an array of article objects", () => {
+    test("200: Responds with an array of article objects (default 10)", () => {
           return request(app)
           .get("/api/articles")
           .expect(200)
           .then(({body: { articles }}) => {
-            expect(articles).toHaveLength(13)
+            expect(articles).toHaveLength(10)
             articles.forEach((article) => {
               expect(article).toMatchObject({
                 article_id: expect.any(Number),
@@ -108,7 +108,7 @@ describe("GET /api/articles", () => {
       .get("/api/articles")
       .expect(200)
       .then(({body: { articles }}) => {
-        expect(articles).toHaveLength(13)
+        expect(articles).toHaveLength(10)
         articles.forEach((article) => {
           expect(article).not.toHaveProperty("body")
         })
@@ -233,7 +233,7 @@ describe("GET /api/articles", () => {
     .get("/api/articles?topic")
     .expect(200)
     .then(({body: { articles }}) => {
-        expect(articles).toHaveLength(13)
+        expect(articles).toHaveLength(10)
         articles.forEach((article) => {
           expect(article).toMatchObject({
             article_id: expect.any(Number),
@@ -258,25 +258,167 @@ describe("GET /api/articles", () => {
       })
     })
   })
-
-describe("ERRORS", () => {
-  test("404: No data found for invalid sort query", () => {
-    return request(app)
-    .get("/api/articles?sort_by=banana")
-    .expect(404)
-    .then(({body : { msg }}) => {
-      expect(msg).toBe('not found: invalid sort query')
+  describe("pagination", () => {
+    test("200: Responds with 10 articles by default", () => {
+      return request(app)
+        .get("/api/articles")
+        .expect(200)
+        .then(({body: { articles, total_count }}) => {
+          expect(articles).toHaveLength(10)
+          expect(total_count).toBe(13)
+          articles.forEach((article) => {
+            expect(article).toMatchObject({
+              article_id: expect.any(Number),
+              title: expect.any(String),
+              topic: expect.any(String),
+              author: expect.any(String),
+              created_at: expect.any(String),
+              votes: expect.any(Number),
+              article_img_url: expect.any(String),
+              comment_count: expect.any(Number)
+          });
+        })
+      })
     })
+
+    test("200: Responds with specified number of articles using limit", () => {
+      return request(app)
+        .get("/api/articles?limit=5")
+        .expect(200)
+        .then(({ body }) => {
+          const { articles, total_count } = body;
+          expect(articles.length).toBeLessThanOrEqual(5);
+          expect(total_count).toBe(13);
+          articles.forEach((article) => {
+            expect(article).toMatchObject({
+              article_id: expect.any(Number),
+              title: expect.any(String),
+              topic: expect.any(String),
+              author: expect.any(String),
+              created_at: expect.any(String),
+              votes: expect.any(Number),
+              article_img_url: expect.any(String),
+              comment_count: expect.any(Number)
+            });
+          });
+        });
+    });
+
+    test("200: Responds with specified number of articles using limit beyond total articles", () => {
+      return request(app)
+        .get("/api/articles?limit=20")
+        .expect(200)
+        .then(({ body }) => {
+          const { articles, total_count } = body;
+          expect(articles.length).toBeLessThanOrEqual(20);
+          expect(total_count).toBe(13);
+          articles.forEach((article) => {
+            expect(article).toMatchObject({
+              article_id: expect.any(Number),
+              title: expect.any(String),
+              topic: expect.any(String),
+              author: expect.any(String),
+              created_at: expect.any(String),
+              votes: expect.any(Number),
+              article_img_url: expect.any(String),
+              comment_count: expect.any(Number)
+            });
+          });
+        });
+    });
+
+    test("200: Responds with specified number of articles using limit and looking at 2nd page", () => {
+      return request(app)
+        .get("/api/articles?limit=5&p=2")
+        .expect(200)
+        .then(({ body }) => {
+          const { articles, total_count } = body;
+          expect(articles.length).toBeLessThanOrEqual(5);
+          expect(total_count).toBe(13);
+          articles.forEach((article) => {
+            expect(article).toMatchObject({
+              article_id: expect.any(Number),
+              title: expect.any(String),
+              topic: expect.any(String),
+              author: expect.any(String),
+              created_at: expect.any(String),
+              votes: expect.any(Number),
+              article_img_url: expect.any(String),
+              comment_count: expect.any(Number)
+            });
+          });
+        });
+    });
+
+    test("200: Responds with specified number of articles using limit when using queries", () => {
+      return request(app)
+        .get("/api/articles?topic=mitch&limit=5")
+        .expect(200)
+        .then(({ body }) => {
+          const { articles, total_count } = body;
+          expect(articles.length).toBeLessThanOrEqual(5);
+          expect(total_count).toBe(12);
+          articles.forEach((article) => {
+            expect(article).toMatchObject({
+              article_id: expect.any(Number),
+              title: expect.any(String),
+              topic: expect.any(String),
+              author: expect.any(String),
+              created_at: expect.any(String),
+              votes: expect.any(Number),
+              article_img_url: expect.any(String),
+              comment_count: expect.any(Number)
+            });
+          });
+        });
+    });
   })
 
-  test("404: No data found for invalid order query", () => {
-    return request(app)
-    .get("/api/articles?order=banana")
-    .expect(404)
-    .then(({body : { msg }}) => {
-      expect(msg).toBe('not found: invalid order query')
+  describe("ERRORS", () => {
+    test("400: bad request for invalid sort query", () => {
+      return request(app)
+      .get("/api/articles?sort_by=banana")
+      .expect(400)
+      .then(({body : { msg }}) => {
+        expect(msg).toBe('bad request: invalid sort query')
+      })
     })
-  })
+
+    test("400: bad request for invalid order query", () => {
+      return request(app)
+      .get("/api/articles?order=banana")
+      .expect(400)
+      .then(({body : { msg }}) => {
+        expect(msg).toBe('bad request: invalid order query')
+      })
+    })
+
+    test("400: invalid limit query", () => {
+      return request(app)
+      .get("/api/articles?limit=abc")
+      .expect(400)
+      .then(({ body : {msg}}) => {
+        expect(msg).toBe("invalid data type for request")
+      })
+    })
+
+    test("400: negative limit query", () => {
+      return request(app)
+      .get("/api/articles?limit=-1")
+      .expect(400)
+      .then(({ body : {msg}}) => {
+        expect(msg).toBe("invalid query for limit")
+      })
+    })
+
+    test("404: page not found large page request", () => {
+      return request(app)
+      .get("/api/articles?limit=5&p=100")
+      .expect(404)
+      .then(({ body : {msg}}) => {
+        expect(msg).toBe("page not found")
+      })
+    })
   })
 })
 
