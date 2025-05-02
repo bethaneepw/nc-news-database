@@ -127,7 +127,12 @@
       "description": "not quite as cool as cats",
       "img_url": "https://www.healthytherapies.com/wp-content/uploads/2016/06/Lime3.jpg"
     }}
-}
+},
+"DELETE /api/articles/:article_id":{
+  "description": "deletes an article according to given article id",
+  "exampleResponse": {}
+  }
+
 }
 
 
