@@ -215,7 +215,8 @@ describe("GET /api/articles", () => {
       .expect(200)
       .then(({body: { articles }}) => {
         expect(articles).toHaveLength(1)
-        expect(articles[0]).toMatchObject({
+        articles.forEach((article)=> {
+          expect(article).toMatchObject({
           article_id: expect.any(Number),
           title: "UNCOVERED: catspiracy to bring down democracy",
           topic: "cats",
@@ -224,6 +225,7 @@ describe("GET /api/articles", () => {
           votes: 0,
           article_img_url:"https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
           comment_count: expect.any(Number)
+          })      
         })
       })
     })
