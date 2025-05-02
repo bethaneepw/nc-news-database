@@ -375,7 +375,6 @@ describe("GET /api/articles", () => {
         });
     });
   })
-
   describe("ERRORS", () => {
     test("400: bad request for invalid sort query", () => {
       return request(app)
