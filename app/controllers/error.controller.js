@@ -5,6 +5,8 @@ exports.sqlErrorHandler = (err, req, res, next) => {
         res.status(400).send({ msg: `required data not provided`})
     } else if (err.code === "2201W") {
         res.status(400).send({msg : "invalid query for limit"})
+    } else if (err.code === "23502"){
+        res.status(400).send({msg : "cannot have null value"})
     } else {
         next(err)
     }

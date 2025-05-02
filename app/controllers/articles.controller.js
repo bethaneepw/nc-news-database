@@ -1,4 +1,4 @@
-const { selectArticleById, selectArticles, updateArticleById, addArticle } = require("../models/articles.model")
+const { selectArticleById, selectArticles, updateArticleById, addArticle, removeArticleById } = require("../models/articles.model")
 
 exports.getArticleById = (req, res, next) => {
     const articleId = req.params.article_id;
@@ -41,5 +41,17 @@ exports.postArticle = (req, res, next) => {
     .then((article) => {
         res.status(201).send({ article })
     })
+    .catch((err) => {
+        next(err)
+    })
     
+}
+
+exports.deleteArticleById = (req, res, next) => {
+    const articleId = req.params.article_id;
+    return removeArticleById(articleId).then(()=> {
+        res.status(204).send()
+    }).catch((err)=>{
+        next(err)
+    })
 }

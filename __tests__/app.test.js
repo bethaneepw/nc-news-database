@@ -582,8 +582,6 @@ describe("GET /api/articles/:article_id/comments", () => {
   
 })
   
-
-
 describe("POST /api/articles/:article_id/comments", () => {
   test("201: Responds with the added comment", () => {
     return request(app)
@@ -995,6 +993,111 @@ describe("POST: /api/articles", () => {
   })
 
 })
+
+describe("POST: /api/topics", () => {
+  test("201: Responds with added topic", () => {
+    return request(app)
+    .post("/api/topics")
+    .send({
+      slug: "test_topic",
+      description: "ah yes, an interesting description!",
+      img_url: "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700"
+    })
+    .expect(201)
+    .then(({ body : { topic }})=> {
+      expect(topic).toMatchObject({
+        slug: "test_topic",
+        description: "ah yes, an interesting description!",
+        img_url: "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700"
+      })
+    })
+  })
+
+  test("201: Accepts empty string for image", () => {
+    return request(app)
+    .post("/api/topics")
+    .send({
+      slug: "test_topic",
+      description: "ah yes, an interesting description!",
+      img_url: ""
+    })
+    .expect(201)
+    .then(({ body : { topic }})=> {
+      expect(topic).toMatchObject({
+        slug: "test_topic",
+        description: "ah yes, an interesting description!",
+        img_url: ""
+      })
+    })
+  })
+
+  test("400: Error if no slug given", () => {
+    return request(app)
+    .post("/api/topics")
+    .send({
+      description: "ah yes, an interesting description!",
+      img_url: ""
+    })
+    .expect(400)
+    .then(({body : { msg}}) => {
+      expect(msg).toBe("cannot have null value")
+    })
+  })
+
+  test("400: Error if no description", () => {
+    return request(app)
+    .post("/api/topics")
+    .send({
+      slug: "dogs",
+      img_url: ""
+    })
+    .expect(400)
+    .then(({body : { msg}}) => {
+      expect(msg).toBe("cannot have null value")
+    })
+  })
+})
+
+describe("DELETE /api/articles/:article_id", () => {
+  test("204: Deletes the article and respective comments", () => {
+    return request(app)
+    .delete("/api/articles/1")
+    .expect(204)
+  })
+
+  test("204: Deletes the article and its respective comments", () => {
+    return request(app)
+    .delete("/api/articles/1")
+    .expect(204).then(()=>{
+      return request(app)
+      .get("/api/articles/1/comments")
+      .expect(404)
+      .then(({body: {msg }}) => {
+        expect(msg).toBe("article not found")
+      })
+    })
+  })
+
+  test("400: Responds with bad request if article_id is invalid", () => {
+    return request(app)
+    .delete("/api/articles/banana")
+    .expect(400)
+    .then(({body: {msg}})=> {
+      expect(msg).toBe("invalid data type for request")
+    })
+  })
+
+  test("404: Responds with not found if article does not exist", () => {
+    return request(app)
+    .delete("/api/articles/365")
+    .expect(404)
+    .then(({body: {msg}})=> {
+      expect(msg).toBe("article not found")
+    })
+  })
+})
+
+
 
 describe("ERROR invalid endpoint", () => {
   test("404: Responds with error if user inputs an invalid endpoint", () => {

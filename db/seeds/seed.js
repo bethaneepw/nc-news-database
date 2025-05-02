@@ -17,7 +17,7 @@ const seed = ({ topicData, userData, articleData, commentData }) => {
   //create databases
   .then(()=> {
     return db.query(`CREATE TABLE topics ( 
-      description VARCHAR(100),
+      description VARCHAR(100) NOT NULL,
       slug VARCHAR(40) PRIMARY KEY,
       img_url VARCHAR(1000));`)
   })
@@ -42,7 +42,7 @@ const seed = ({ topicData, userData, articleData, commentData }) => {
   .then(()=> {
     return db.query(`CREATE TABLE comments (
       comment_id SERIAL PRIMARY KEY,
-      article_id INT REFERENCES articles(article_ID),
+      article_id INT REFERENCES articles(article_ID) ON DELETE CASCADE,
       body TEXT,
       votes INT DEFAULT 0,
       author VARCHAR(30) REFERENCES users(username),

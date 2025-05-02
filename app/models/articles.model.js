@@ -1,5 +1,6 @@
 const db = require ("../../db/connection");
-const format = require("pg-format")
+const format = require("pg-format");
+const { selectCommentsByArticleId, removeCommentById } = require("./comments.model");
 
 
 function selectCommentCountsOfArticles() {
@@ -146,4 +147,13 @@ queryStr = format(`INSERT INTO articles (author, body, title, topic) VALUES %L R
     })
 }
 
+exports.removeArticleById = (articleId) => {
+    return db.query(`DELETE FROM articles WHERE article_id = $1 RETURNING *;`, [articleId])
+    .then(({rows})=> {
+        if (rows.length === 0) {
+            return Promise.reject({status: 404, msg: "article not found"})
+        }
+    return;
+    })
 
+}
