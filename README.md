@@ -3,7 +3,7 @@
 If you would like to see the hosted version of this repo please followe this link:
     https://nc-news-rvfa.onrender.com/api
 
-This project is a database of articles, topics, users and comments. Data is accessible through various endpoints as detailed in the link above. 
+This project is an API mimicking a news website. Data is accessible through various endpoints as detailed in the link above. 
 
 To use this repo yourself, fork this repo through github and then clone into your preferred local folder.
 
